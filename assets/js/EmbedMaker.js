@@ -58,11 +58,14 @@ export default class EmbedMaker extends Reactive {
 
   showMedia(el) {
     const mediaWrapper = ensureChildNode(document.querySelector('body'), 'fullscreen-media-wrapper', mediaWrapper => {
-      mediaWrapper.addEventListener('click', e => showEl(mediaWrapper, e.target != mediaWrapper));
+      mediaWrapper.addEventListener('click', e => {
+        showEl(mediaWrapper, e.target != mediaWrapper);
+        if (e.target == mediaWrapper) this.emit('hide', mediaWrapper);
+      });
     });
 
     removeChildNodes(mediaWrapper);
-    mediaWrapper.appendChild(el.cloneNode());
+    mediaWrapper.appendChild(el.cloneNode(true));
     showEl(mediaWrapper, true);
   }
 
