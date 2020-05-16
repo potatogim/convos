@@ -7,3 +7,123 @@
     width: 1.2em;
   }
 }
+
+.rtc-conversations {
+  @extend %next-to-sidebar;
+  top: 4.2rem;
+  z-index: 800;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-end;
+}
+
+.rtc-conversation {
+  background: var(--input-bg);
+  border: var(--input-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 3px 2px rgba(0, 0, 0, 0.1);
+  margin-left: var(--gutter-small);
+  margin-bottom: var(--gutter-small);
+  width: 7rem;
+  height: 4.3rem;
+  max-width: calc(50% - 0.3rem);
+  position: relative;
+  overflow: hidden;
+
+  &.is-local {
+    video {
+      transform: rotateY(180deg);
+    }
+  }
+
+  video {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    position: relative;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  > i {
+    font-size: 2rem;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 125px;
+    margin: 0 auto;
+    width: 3rem;
+    display: block;
+  }
+
+  // loading
+  &.has-state-0 {
+    a,
+    video {
+      display: none;
+    }
+  }
+
+  &.has-state-0,
+  &.has-state-1,
+  &.has-state-2 {
+    > i {
+      animation: pulse 1s infinite;
+    }
+  }
+}
+
+.rtc-conversation__info {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  > * {
+    display: block;
+  }
+}
+
+.rtc-conversation.has-video {
+  width: 170px;
+  height: 130px;
+
+  .rtc-conversation__info {
+    color: #fff;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    &:hover {
+      opacity: 0.98;
+    }
+  }
+
+  &.has-state-0 .rtc-conversation__info {
+    color: var(--text-color);
+  }
+
+  .btn {
+    font-size: 0.9rem;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0.2rem;
+    width: 2rem;
+    display: block;
+  }
+}
+
+.rtc-conversation__name {
+  margin: 0.2rem;
+  text-align: center;
+}
+
+.rtc-conversation.has-audio-only {
+  .btn {
+    width: 100%;
+  }
+}

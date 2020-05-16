@@ -1,4 +1,5 @@
 <script>
+import Button from '../components/form/Button.svelte';
 import ChatMessages from '../js/ChatMessages';
 import ChatHeader from '../components/ChatHeader.svelte';
 import ChatInput from '../components/ChatInput.svelte';
@@ -17,6 +18,7 @@ import {route} from '../store/Route';
 
 const chatMessages = new ChatMessages();
 const dragAndDrop = new DragAndDrop();
+const rtc = getContext('rtc');
 const scrollspy = new Scrollspy();
 const user = getContext('user');
 const track = {}; // Holds values so we can compare before/after changes
@@ -135,7 +137,17 @@ async function setDialogFromUser(user) {
 <ChatHeader>
   <h1><a href="#activeMenu:{dialog.connection_id ? 'settings' : 'nav'}" tabindex="-1">{l(dialog.name)}</a></h1>
   <span class="chat-header__topic">{topicOrStatus(connection, dialog)}</span>
-  <a href="#activeMenu:{dialog.connection_id ? 'settings' : 'nav'}" class="has-tooltip" data-tooltip="{l('Settings')}"><Icon name="tools"/></a>
+  <a href="#activeMenu:{dialog.connection_id ? 'settings' : 'nav'}" class="btn has-tooltip" data-tooltip="{l('Settings')}"><Icon name="tools"/></a>
+  {#if $rtc.localStream.id && $rtc.constraints.video}
+    <Button icon="video-slash" tooltip="{l('Hangup')}" on:click="{e => rtc.hangup()}"/>
+  {:else}
+    <Button icon="video" tooltip="{l('Call')}" on:click="{e => rtc.call(dialog, {audio: true, video: true})}"/>
+  {/if}
+  {#if $rtc.localStream.id && !$rtc.constraints.video}
+    <Button icon="phone-slash" tooltip="{l('Hangup')}" on:click="{e => rtc.hangup()}"/>
+  {:else}
+    <Button icon="phone" tooltip="{l('Call')}" on:click="{e => rtc.call(dialog, {audio: true, video: false})}"/>
+  {/if}
 </ChatHeader>
 
 <main class="main has-chat" bind:this="{mainEl}"  on:scroll="{scrollspy.onScroll}">
