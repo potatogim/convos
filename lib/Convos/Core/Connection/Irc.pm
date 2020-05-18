@@ -4,7 +4,7 @@ use Mojo::Base 'Convos::Core::Connection';
 no warnings 'utf8';
 use Convos::Util qw($CHANNEL_RE DEBUG);
 use IRC::Utils ();
-use Mojo::JSON qw(false true);
+use Mojo::JSON qw(encode_json false true);
 use Mojo::Util qw(term_escape trim);
 use Parse::IRC ();
 use Time::HiRes 'time';
@@ -31,6 +31,29 @@ sub disconnect_p {
   $self->{disconnecting} = 1;    # Prevent getting queued
   $self->_write("QUIT :https://convos.by", sub { $self->_stream_remove($p) });
   return $p;
+}
+
+sub rtc_p {
+  my ($self, $msg) = @_;
+  return Mojo::Promise->reject('Missing property: event.')   unless $msg->{event};
+  return Mojo::Promise->reject('Missing property: call_id.') unless $msg->{call_id};
+  return Mojo::Promise->reject('Dialog not found.')
+    unless $msg->{dialog_id} and my $dialog = $self->get_dialog($msg->{dialog_id});
+
+  my @irc_msg;
+  if ($msg->{event} eq 'signal') {
+    return Mojo::Promise->reject('Missing property: target.') unless $msg->{target};
+    my $payload = Mojo::Parameters->new;
+    $payload->param($_ => $msg->{$_}) for grep {/[a-z][A-Z]/} keys %$msg;
+    push @irc_msg, SIG => @$msg{qw(call_id target)}, $payload->to_string;
+  }
+  else {
+    push @irc_msg, uc $msg->{event} => $msg->{call_id};
+  }
+
+  $msg->{from} = $self->_nick;
+  return $self->_write_p(sprintf "NOTICE %s %s\r\n",
+    $dialog->name, $self->_make_ctcp_string(RTC => @irc_msg))->then(sub { return $msg });
 }
 
 sub send_p {
@@ -83,6 +106,11 @@ sub _connect_args {
   $self->{myinfo}{nick} = $params->param('nick');
 
   return $self->SUPER::_connect_args;
+}
+
+sub _irc_event_ctcp_rtc {
+  my ($self, $msg) = @_;
+  warn Mojo::Util::dumper($msg);
 }
 
 sub _irc_event_ctcp_action {
