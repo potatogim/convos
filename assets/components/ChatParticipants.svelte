@@ -4,7 +4,7 @@ import Icon from '../components/Icon.svelte';
 import Link from '../components/Link.svelte';
 import {afterUpdate, getContext} from 'svelte';
 import {l} from '../js/i18n';
-import {modeClassNames} from '../js/util';
+import {modeClassNames, q} from '../js/util';
 
 const rtc = getContext('rtc');
 const user = getContext('user');
@@ -28,11 +28,11 @@ function zoomVideo(e) {
   const wrapperEl = e.target.closest('.rtc-conversation');
   user.embedMaker.showMedia(wrapperEl);
   user.embedMaker.on('hide').then(() => {
-    wrapperEl.querySelector('video').classList.remove('is-disabled');
+    q(wrapperEl.parentNode, 'video', el => el.classList.remove('is-disabled'));
     rtc.render();
   });
 
-  wrapperEl.querySelector('video').classList.add('is-disabled');
+  q(wrapperEl.parentNode, 'video', el => el.classList.add('is-disabled'));
   rtc.render();
 }
 </script>
